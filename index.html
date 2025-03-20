@@ -155,7 +155,7 @@
             <p class="text-blue text-center">&copy; 2025 小王</p>
         </div>
     </div>
-    <div id="preview-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-700/50">
+    <div id="preview-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-700/70">
         <div class="flex items-center justify-center min-h-screen h-full">
             <div class="bg-white p-1 rounded-md shadow-lg w-4/5 h-4/5 relative">
                 <!-- 修改这里，添加占位内容 -->
@@ -357,6 +357,17 @@
             previewModal.classList.remove('hidden');
             previewModal.classList.add('show'); 
         });
+
+        previewModal.addEventListener('click', (event) => {
+        if (!previewContainer.contains(event.target)) {
+            previewModal.classList.remove('show');
+            previewModal.classList.add('hide');
+            setTimeout(() => {
+                previewModal.classList.add('hidden');
+                previewModal.classList.remove('hide');
+            }, 300);
+        }
+    });
 
         closePreviewButton.addEventListener('click', () => {
         previewModal.classList.remove('show');
