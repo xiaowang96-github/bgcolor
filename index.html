@@ -46,6 +46,7 @@
         }
 
 
+
         .shadow-3d {
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), inset 0px 0px 20px 4px rgba(0, 0, 0, 0.23)
         }
@@ -60,9 +61,48 @@
             background: rgb(213, 223, 231);
             /* 原 body 背景 */
         }
-        .shadow-3d{
-            box-shadow:  7px 5px 14px #f7f7f742;
+
+        .shadow-3d {
+            box-shadow: 7px 5px 14px #f7f7f742;
         }
+        @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    #preview-modal {
+        /* 初始隐藏模态框 */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    #preview-modal.show {
+        /* 显示模态框并添加淡入动画 */
+        opacity: 1;
+        visibility: visible;
+        animation: fadeIn 0.3s ease;
+    }
+
+    #preview-modal.hide {
+        /* 隐藏模态框并添加淡出动画 */
+        animation: fadeOut 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+    }
     </style>
 </head>
 
@@ -71,7 +111,9 @@
     <div id="background-container"></div>
     <div class="bg-white/60 rounded-lg  shadow-3d mb-6 min-w-80 max-h-lg ">
         <div class="space-y-2 mb-3 bg-blue-500/30  rounded-t-lg ">
-            <h1 class="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">渐变壁纸生成器</h1>
+            <h1
+                class="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                渐变壁纸生成器</h1>
             <p class="text-lg text-center  underline decoration-pink-500/30">选择颜色、方向和透明度，生成自定义渐变壁纸</p>
         </div>
 
@@ -104,12 +146,29 @@
                 class="border border-gray-300 rounded-md appearance-none w-full"
                 style="background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);">
         </div>
-        <div class="flex justify-between space-x-2 mb-2 p-2 text-lg">
+        <div class="flex justify-between space-x-3 mb-2 p-2 text-lg">
             <button id="apply" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-green-600">应用</button>
             <button id="save" class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-green-600">保存为壁纸</button>
+            <button id="preview" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-green-600">预览</button>
         </div>
         <div class="content-center p-2 text-lg">
             <p class="text-blue text-center">&copy; 2025 小王</p>
+        </div>
+    </div>
+    <div id="preview-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-700/50">
+        <div class="flex items-center justify-center min-h-screen h-full">
+            <div class="bg-white p-1 rounded-md shadow-lg w-4/5 h-4/5 relative">
+                <!-- 修改这里，添加占位内容 -->
+                <div id="preview-container" class="w-full h-full">
+                    <!-- 这里可以添加一些占位文本，保证有内容 -->
+                    <span style="opacity: 0;">占位内容</span>
+                </div>
+                <button id="close-preview" class="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 font-bold py-2 px-4 rounded-full transition-colors duration-300">关闭</button>
+            </div>
+        </div>
+    </div>
+
+            </div>
         </div>
     </div>
 
@@ -259,6 +318,55 @@
             const b = parseInt(hex.slice(5, 7), 16);
             return `rgba(${r}, ${g}, ${b}, ${opacity})`;
         }
+
+        // 预览按钮
+        const previewButton = document.getElementById('preview');
+        const previewModal = document.getElementById('preview-modal');
+        const previewContainer = document.getElementById('preview-container');
+        const closePreviewButton = document.getElementById('close-preview');
+
+
+        previewButton.addEventListener('click', () => {
+            const color1 = color1Input.value;
+            const color2 = color2Input.value;
+            const direction = directionSelect.value;
+            const opacity = opacityInput.value;
+
+            const rgbaColor1 = hexToRGBA(color1, opacity);
+            const rgbaColor2 = hexToRGBA(color2, opacity);
+
+            let gradientBackground;
+            switch (direction) {
+                case 'to bottom':
+                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    break;
+                case 'to right':
+                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    break;
+                case 'to bottom right':
+                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    break;
+                case 'to bottom left':
+                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    break;
+                default:
+                    gradientBackground = `radial-gradient(circle, ${rgbaColor1}, ${rgbaColor2})`;
+            }
+
+            previewContainer.style.background = gradientBackground;
+            previewModal.classList.remove('hidden');
+            previewModal.classList.add('show'); 
+        });
+
+        closePreviewButton.addEventListener('click', () => {
+        previewModal.classList.remove('show');
+        previewModal.classList.add('hide'); // 添加淡出动画类
+        setTimeout(() => {
+            previewModal.classList.add('hidden');
+            previewModal.classList.remove('hide'); // 移除淡出类，以便下次正常显示
+        }, 300); // 等待动画完成后隐藏模态框
+    });
+
     </script>
 </body>
 
