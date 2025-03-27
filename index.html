@@ -122,10 +122,14 @@
                 <label for="color1" class="block mb-1 font-sans">起始颜色</label>
                 <input type="color" id="color1" value="#EEA0A0" class="border border-gray-300 rounded-md">
             </div>
+            <div id="transition-colors-container"></div>
             <div class="flex justify-between">
                 <label for="color2" class="block mb-1 font-sans">结束颜色</label>
                 <input type="color" id="color2" value="#6568C3" class="border border-gray-300 rounded-md">
             </div>
+            <button id="add-transition-color" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">添加过渡颜色</button>
+    <!-- 过渡颜色容器 -->
+    
         </div>
         <div class="flex justify-between space-x-2 mb-2 p-2 text-lg">
             <label for="direction" class="block mb-1 font-sans content-center">渐变方向</label>
@@ -194,6 +198,37 @@
             opacityValue.textContent = (opacity * 100).toFixed(0) + '%';
         });
 
+        const addTransitionColorButton = document.getElementById('add-transition-color');
+        const transitionColorsContainer = document.getElementById('transition-colors-container');
+        let transitionColorCount = 0;
+
+        addTransitionColorButton.addEventListener('click', () => {
+            transitionColorCount++;
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.id = `transition-color-${transitionColorCount}`;
+            input.classList.add('border', 'border-gray-300', 'rounded-md');
+            const label = document.createElement('label');
+            label.textContent = `过渡颜色 ${transitionColorCount}`;
+            label.htmlFor = `transition-color-${transitionColorCount}`;
+            label.classList.add('block', 'mb-1', 'font-sans');
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '删除';
+            deleteButton.classList.add('bg-red-500', 'text-white', 'px-2', 'rounded-md', 'hover:bg-red-500');
+            deleteButton.addEventListener('click', () => {
+                input.remove();
+                label.remove();
+                deleteButton.remove();
+                transitionColorCount--;
+            });
+            const div = document.createElement('div');
+            div.classList.add('flex', 'justify-between', 'items-center');
+            div.appendChild(label);
+            div.appendChild(deleteButton);
+            div.appendChild(input);      
+            transitionColorsContainer.appendChild(div);
+        });
+
         function updateBackground() {
             const color1 = color1Input.value;
             const color2 = color2Input.value;
@@ -203,22 +238,34 @@
             const rgbaColor1 = hexToRGBA(color1, opacity);
             const rgbaColor2 = hexToRGBA(color2, opacity);
 
+            const transitionColors = [];
+            for (let i = 1; i <= transitionColorCount; i++) {
+                const input = document.getElementById(`transition-color-${i}`);
+                if (input) {
+                    transitionColors.push(hexToRGBA(input.value, opacity));
+                }
+            }
+
             let gradientBackground;
             switch (direction) {
                 case 'to bottom':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to right':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to bottom right':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to bottom left':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    const colorStops = [rgbaColor1, ...transitionColors, rgbaColor2];
+                    const colorStopsString = colorStops.map((color, index) => {
+                        const position = index / (colorStops.length - 1);
+                        return `${color} ${position * 100}%`;
+                    }).join(', ');
+                    gradientBackground = `linear-gradient(${direction}, ${colorStopsString})`;
                     break;
                 default:
-                    gradientBackground = `radial-gradient(circle, ${rgbaColor1}, ${rgbaColor2})`;
+                    const radialColorStops = [rgbaColor1, ...transitionColors, rgbaColor2];
+                    const radialColorStopsString = radialColorStops.map((color, index) => {
+                        const position = index / (radialColorStops.length - 1);
+                        return `${color} ${position * 100}%`;
+                    }).join(', ');
+                    gradientBackground = `radial-gradient(circle, ${radialColorStopsString})`;
             }
 
             // 原背景执行淡出动画
@@ -300,8 +347,19 @@
             const rgbaColor1 = hexToRGBA(color1, opacity);
             const rgbaColor2 = hexToRGBA(color2, opacity);
 
-            gradient.addColorStop(0, rgbaColor1);
-            gradient.addColorStop(1, rgbaColor2);
+            const transitionColors = [];
+            for (let i = 1; i <= transitionColorCount; i++) {
+                const input = document.getElementById(`transition-color-${i}`);
+                if (input) {
+                    transitionColors.push(hexToRGBA(input.value, opacity));
+                }
+            }
+
+            const colorStops = [rgbaColor1, ...transitionColors, rgbaColor2];
+            colorStops.forEach((color, index) => {
+                const position = index / (colorStops.length - 1);
+                gradient.addColorStop(position, color);
+            });
 
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -335,22 +393,34 @@
             const rgbaColor1 = hexToRGBA(color1, opacity);
             const rgbaColor2 = hexToRGBA(color2, opacity);
 
+            const transitionColors = [];
+            for (let i = 1; i <= transitionColorCount; i++) {
+                const input = document.getElementById(`transition-color-${i}`);
+                if (input) {
+                    transitionColors.push(hexToRGBA(input.value, opacity));
+                }
+            }
+
             let gradientBackground;
             switch (direction) {
                 case 'to bottom':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to right':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to bottom right':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
-                    break;
                 case 'to bottom left':
-                    gradientBackground = `linear-gradient(${direction}, ${rgbaColor1}, ${rgbaColor2})`;
+                    const colorStops = [rgbaColor1, ...transitionColors, rgbaColor2];
+                    const colorStopsString = colorStops.map((color, index) => {
+                        const position = index / (colorStops.length - 1);
+                        return `${color} ${position * 100}%`;
+                    }).join(', ');
+                    gradientBackground = `linear-gradient(${direction}, ${colorStopsString})`;
                     break;
                 default:
-                    gradientBackground = `radial-gradient(circle, ${rgbaColor1}, ${rgbaColor2})`;
+                    const radialColorStops = [rgbaColor1, ...transitionColors, rgbaColor2];
+                    const radialColorStopsString = radialColorStops.map((color, index) => {
+                        const position = index / (radialColorStops.length - 1);
+                        return `${color} ${position * 100}%`;
+                    }).join(', ');
+                    gradientBackground = `radial-gradient(circle, ${radialColorStopsString})`;
             }
 
             previewContainer.style.background = gradientBackground;
